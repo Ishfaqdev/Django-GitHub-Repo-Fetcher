@@ -32,28 +32,24 @@ def search_form(request):
 
 def search_results(request):
     if request.method == 'POST':
-        # Process form submission
         username = request.POST['username']
         language = request.POST['language']
 
-        # Check if the username is valid
         if not is_valid_github_username(username):
             error_message = 'Invalid GitHub username. Please check your username.'
             return render(request, 'repo/index.html', {'error_message': error_message})
 
-        # Fetch all repositories for the user, including pagination
+        # Fetch all repositories
         repositories = fetch_all_user_repositories(username)
 
-        # Filter repositories by the specified language (case-insensitive)
+        # Filter repositories by the specified language
         if language:
-            language = language.lower()  # Convert input language to lowercase
+            language = language.lower()
             filtered_repositories = [
                 repo for repo in repositories if repo['language'] and repo['language'].lower() == language]
         else:
-            # If no language was specified, include all repositories
             filtered_repositories = repositories
 
-        # Add a 'formatted_pushed_at' field to each repository's data
         for repo in filtered_repositories:
             if repo['pushed_at']:
                 pushed_at = datetime.fromisoformat(repo['pushed_at'][:-1])
@@ -66,5 +62,4 @@ def search_results(request):
         }
         return render(request, 'repo/repos.html', context)
     else:
-        # If not a POST request, redirect to the search form
         return search_form(request)
